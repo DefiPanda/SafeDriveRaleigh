@@ -42,7 +42,7 @@ def findGeolocation(content, geolocation, date):
 
 def processRequests(url, num_days, geolocation):
   base = datetime.datetime.today()
-  dateList = [ base - datetime.timedelta(days=x) for x in range(18, num_days) ]
+  dateList = [ base - datetime.timedelta(days=x) for x in range(1, num_days) ]
   for date in dateList:
     params = {
       'date' : date.strftime('%m/%d/%y')
