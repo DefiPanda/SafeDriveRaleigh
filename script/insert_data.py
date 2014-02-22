@@ -18,28 +18,31 @@ def savePDFDateAsTmpFile(matched_filename):
   FILE.close()
   return savedFileName
 
-def getGeolocationFromPDF(savedFileName, geolocation):
+def getGeolocationFromPDF(savedFileName, geolocation, date):
   subprocess.call(["pdftotext", savedFileName, "tmp.txt"])
   content = ""
-  with open("tmp.txt", 'r') as myfile:
+  try:
+    with open("tmp.txt", 'r') as myfile:
       content = myfile.read()
-  code_pattern = re.compile("[+-]?\d+\.\d+[NWES]")
-  matched_code = code_pattern.findall(content)
-  if matched_code != None and len(matched_code) == 2:
-    print matched_code[0][:-1] + " " + matched_code[1][:-1]
-    geolocation.insert({"lat": matched_code[0][:-1], "lng":matched_code[1][:-1]})
-  subprocess.call(["rm", "tmp.txt"])
-  subprocess.call(["rm", savedFileName])
+    code_pattern = re.compile("[+-]?\d+\.\d+[NWES]")
+    matched_code = code_pattern.findall(content)
+    if matched_code != None and len(matched_code) == 2:
+      print matched_code[0][:-1] + " " + matched_code[1][:-1]
+      geolocation.insert({"lat": matched_code[0][:-1], "lng":matched_code[1][:-1], "date":date})
+    subprocess.call(["rm", "tmp.txt"])
+    subprocess.call(["rm", savedFileName])
+  except IOError:
+    pass
 
-def findGeolocation(content, geolocation):
+def findGeolocation(content, geolocation, date):
   filename_pattern = re.compile("files/.*.pdf")
   for matched_filename in re.findall(filename_pattern, content):
     savedFileName = savePDFDateAsTmpFile(matched_filename)
-    getGeolocationFromPDF(savedFileName, geolocation)
+    getGeolocationFromPDF(savedFileName, geolocation, date)
 
 def processRequests(url, num_days, geolocation):
   base = datetime.datetime.today()
-  dateList = [ base - datetime.timedelta(days=x) for x in range(1, num_days) ]
+  dateList = [ base - datetime.timedelta(days=x) for x in range(18, num_days) ]
   for date in dateList:
     params = {
       'date' : date.strftime('%m/%d/%y')
@@ -51,7 +54,7 @@ def processRequests(url, num_days, geolocation):
     res = opener.open(req)
     content = res.read()
     print date.strftime('%m/%d/%y')
-    findGeolocation(content, geolocation)
+    findGeolocation(content, geolocation, date.strftime('%m/%d/%y'))
 
 def main():
   client = MongoClient()
