@@ -44,6 +44,7 @@ def processRequests(url, num_days, geolocation):
   base = datetime.datetime.today()
   dateList = [ base - datetime.timedelta(days=x) for x in range(1, num_days) ]
   for date in dateList:
+    print date.strftime('%m/%d/%y')
     params = {
       'date' : date.strftime('%m/%d/%y')
     }
@@ -53,8 +54,8 @@ def processRequests(url, num_days, geolocation):
     req = urllib2.Request(url, urllib.urlencode(params))
     res = opener.open(req)
     content = res.read()
-    print date.strftime('%m/%d/%y')
-    findGeolocation(content, geolocation, date.strftime('%m/%d/%y'))
+    
+    findGeolocation(content, geolocation, date)
 
 def main():
   client = MongoClient()
