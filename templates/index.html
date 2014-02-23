@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en"> 
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/leaflet.css') }}">
+    <script src="{{ url_for('static', filename='javascripts/leaflet.js') }}"></script>
+    <script src="{{ url_for('static', filename='javascripts/jquery.js') }}"></script>
+    <style type="text/css">
+      body {
+        padding: 0;
+        margin: 0;
+	  }
+	  html, body, #map {
+        height: 100%;
+	  }
+    </style>
+  </head>
+  <body>
+  	<div id="map"></div>
+    <script type="text/javascript">
+      var map = L.map('map');
+      var marker, hotspots;
+      var inHotSpot = false;
+
+		L.tileLayer('http://{s}.tile.cloudmade.com/BC9A493B41014CAABB98F0471D759707/997/256/{z}/{x}/{y}.png', {
+			maxZoom: 18
+		}).addTo(map);
+
+		$.ajax("{{ url_for('static', filename='data/hotspot.json') }}", {
+			type : 'GET',
+			async: true,
+		    dataType: 'json',
+			success : function(data, textStatus, jqXHR) {
+			  hotspots = data;
+			},
+			error : function(data, textStatus, jqXHR) {
+			  console.log("failed");
+			}
+		});
+
+		function onLocationFound(e) {
+			marker = L.marker(e.latlng).addTo(map);
+			alertIfInHotspot();
+		}
+
+		function onLocationError(e) {
+			console.log(e.message);
+		}
+
+        //it's okay if the async call to get JSON is not returned and hotspots.length == 0 for first few seconds
+		function alertIfInHotspot() {
+			var marker_lat = marker._latlng.lat;
+			var marker_lng = marker._latlng.lng;
+			var inHotSpot_next = false;
+			console.log(marker_lat+" "+marker_lng);
+			for(var i = 0; i < hotspots.length; i++){
+              var hotspot = hotspots[i];
+              var lat = hotspot["lat"];
+              var lng = hotspot["lng"];
+              var dist = distance(marker_lng, marker_lat, lng, lat);
+
+              if(dist < 3){
+                inHotSpot_next = true;
+                break;
+              }
+			}
+			if(inHotSpot == false && inHotSpot_next == true){
+				var snd = new Audio({{ url_for('static', filename='data/dangerous.mp3') }});
+                snd.play();
+			}
+			else if(inHotSpot == true && inHotSpot_next == false){
+				var snd = new Audio({{ url_for('static', filename='data/safe.mp3') }});
+                snd.play();
+			}
+			inHotSpot = inHotSpot_next;
+		}
+
+		function relocate() {
+			options = {
+				enableHighAccuracy: false, 
+                timeout: 2000,
+                maximumAge: 0 
+			};
+            navigator.geolocation.getCurrentPosition(success, error, options);
+		}
+
+		function success(pos) {
+			var crd = pos.coords;
+            marker.setLatLng([crd.latitude, crd.longitude]).update();
+            alertIfInHotspot();
+		}
+
+		function error(err) {
+			console.log('Sorry the service is currently unavailable.');
+		}
+
+		function distance(lon1, lat1, lon2, lat2) {
+		  var R = 6371;
+		  var dLat = toRad(lat2-lat1);
+		  var dLon = toRad(lon2-lon1); 
+		  var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+		          Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * 
+		          Math.sin(dLon/2) * Math.sin(dLon/2); 
+		  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+		  var d = R * c;
+		  return d;
+		}
+
+		function toRad(len) {
+		    return len * Math.PI / 180;
+		}
+
+		map.on('locationfound', onLocationFound);
+		map.on('locationerror', onLocationError);
+
+		map.locate({setView: true, maxZoom: 16});
+
+        setInterval(function(){relocate()},1000);
+
+    </script>
+  </body>
+</html>
