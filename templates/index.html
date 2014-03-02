@@ -40,10 +40,7 @@
 		});
 
 		function onLocationFound(e) {
-			marker = L.marker(e.latlng).addTo(map).bindPopup('Safe zone.')
-    .openPopup();
-            marker.bindPopup('You are in Safe zone.')
-    .openPopup();
+			marker = L.marker(e.latlng).addTo(map).bindPopup('Safe zone.').openPopup();
 			alertIfInHotspot();
 		}
 
@@ -71,10 +68,12 @@
 			if(inHotSpot == false && inHotSpot_next == true){
 				var snd = new Audio({{ url_for('static', filename='data/dangerous.mp3') }});
                 snd.play();
+                marker.bindPopup('Please watch out.').openPopup();
 			}
 			else if(inHotSpot == true && inHotSpot_next == false){
 				var snd = new Audio({{ url_for('static', filename='data/safe.mp3') }});
                 snd.play();
+                marker.bindPopup('Safe zone.').openPopup();
 			}
 			inHotSpot = inHotSpot_next;
 		}
