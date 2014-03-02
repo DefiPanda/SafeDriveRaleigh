@@ -40,7 +40,10 @@
 		});
 
 		function onLocationFound(e) {
-			marker = L.marker(e.latlng).addTo(map);
+			marker = L.marker(e.latlng).addTo(map).bindPopup('Safe zone.')
+    .openPopup();
+            marker.bindPopup('You are in Safe zone.')
+    .openPopup();
 			alertIfInHotspot();
 		}
 
