@@ -1,7 +1,7 @@
 SafeDriveRaleigh
 ================  
   
-Author: Jack Wang  
+Author: Zhe Wang  
   
 What is SafeDriveRaleigh  
 ---  
@@ -17,14 +17,5 @@ JavaScript
 Python  
 Leaflet  
 MongoDB  
-Heroku  
-
-Top to-do list(No guarantee)  
----  
-Use Cordova/PhoneGap to make this HTML5 app hybrid.  
-  
-Probably add a Choropleth map and a heat map for crashing location visualization (well we have 8000+ data points, right?).  
-  
-Add date range selection for map data visualization. We need to interact with MongoDB for that to happen (JSON data on client side is not good, because the computibility of a server is much more decent than a mobile phone; also downloading all data may also be unnecessary).  
-  
-Add script for auto updating crashing data daily.
+Flask  
+Heroku
